@@ -3,10 +3,13 @@ const cors = require('cors');
 import routes from './routes';
 import config from './config/config';
 import * as dotenv from 'dotenv';
+import connectToDatabase from './utils/db';
 
 const app = express();
 dotenv.config();
 const PORT = process.env.PORT || 5000;
+
+connectToDatabase();
 
 app.use(cors(config.corsOptions));
 app.use(express.json());
