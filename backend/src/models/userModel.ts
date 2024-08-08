@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import bcrypt from 'bcryptjs';
 import { IUser } from "../typescript/interfaces/user.interface";
 
 const UserSchema: Schema<IUser> = new Schema({
@@ -6,9 +7,9 @@ const UserSchema: Schema<IUser> = new Schema({
     password: { type: String, required: true},
 })
 
-UserSchema.methods.verifyPassword = function (password: string): boolean {
-    return this.password === password;
+UserSchema.methods.verifyPassword = async function (password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
 }
 
-const UserModel = mongoose.model<IUser>('User', UserSchema);
-export default UserModel;
+const User = mongoose.model<IUser>('User', UserSchema);
+export default User;

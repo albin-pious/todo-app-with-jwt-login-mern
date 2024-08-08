@@ -23,6 +23,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction)=>{
 });
 
 app.listen(PORT, ()=>{
-    console.log(`Server running on port http//:127.0.0.1:${PORT}`);
+    console.log(`Server running on port http://127.0.0.1:${PORT}`);
     
 })
