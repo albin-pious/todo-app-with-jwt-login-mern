@@ -31,7 +31,20 @@ export const login = async(req: Request, res: Response)=>{
             const userId = user._id.toString();
             const token = generateToken(userId);
             const refreshToken = generateRefreshToken(userId);
-            res.json({ token, refreshToken });
+            // http only cookies
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV=== 'Production',
+                maxAge: 3600000,
+                sameSite: 'strict',
+            });
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV=== 'Production',
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                sameSite: 'strict'
+            })
+            res.json({ message: 'login successfully', userName: user.username });
         } else {
             res.status(401).send('Invalid credentials');
         }
