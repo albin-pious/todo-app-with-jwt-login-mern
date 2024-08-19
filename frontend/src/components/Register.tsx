@@ -1,13 +1,16 @@
-import { useState, FC, FormEvent } from 'react';
+import { useState, FC, FormEvent, useEffect } from 'react';
 import { Button, TextField, Typography, Paper, Box, IconButton } from '@mui/material';
-import { createUser } from '../services/api/api';
+import { createUser, usernameChecker } from '../services/api/api';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import debounce from 'lodash.debounce';
+import { green } from '@mui/material/colors';
 
 const Register: FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isValidUserName, setIsValidUserName] = useState<boolean | null>(null);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter(); // Using Next.js router for navigation
 
@@ -25,6 +28,27 @@ const Register: FC = () => {
             }
         }
     };
+
+    useEffect(()=>{
+        if(username){
+            usernameAvailability(username);
+        } else {
+            setIsValidUserName(null);
+        }
+
+        return ()=>{
+            usernameAvailability.cancel();
+        }
+    })
+
+    const usernameAvailability = debounce(async(username:string)=>{
+        try {
+            const response = await usernameChecker(username);
+            setIsValidUserName(response.available);
+        } catch (error) {
+            setIsValidUserName(null)
+        }
+    }, 2000);
 
     return (
         <Paper elevation={3} className="p-6 mx-auto max-w-sm">
@@ -46,6 +70,22 @@ const Register: FC = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         required
                         autoFocus
+                        error={isValidUserName === false}
+                        helperText={
+                            isValidUserName === false ? 'Username is already taken' 
+                            : isValidUserName === true ? 'Username is available'
+                            : ''
+                        }
+                        InputProps={{
+                            style: {
+                                borderColor: isValidUserName === true ? green[400] : undefined
+                            }
+                        }}
+                        FormHelperTextProps={{
+                            style: {
+                                color: isValidUserName === true ? green[500] : undefined,
+                            },
+                        }}
                     />
                     <TextField
                         variant="outlined"

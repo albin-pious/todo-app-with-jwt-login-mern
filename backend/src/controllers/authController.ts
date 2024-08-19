@@ -4,20 +4,47 @@ import User from "../models/userModel";
 import { generateRefreshToken, generateToken, verifyToken } from "../utils/jwt";
 import { IUser } from "../typescript/interfaces/user.interface";
 
-export const register = async(req: Request, res: Response)=> {
+export const checkUsername = async (req: Request, res: Response) => {
+    try {
+        const { username } = req.body;
+        if (!username) {
+            return res.status(400).json({ message: "Username is required." });
+        }
+
+        const userExist = await User.findOne({ username });
+        if (userExist) {
+            return res.status(200).json({ available: false });
+        } else {
+            return res.status(200).json({ available: true });
+        }
+    } catch (error) {
+        console.error('Error occurred while checking username', error);
+        return res.status(500).send('Internal Server Error');
+    }
+};
+
+export const register = async (req: Request, res: Response) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) {
             return res.status(400).json({ message: 'Username and password are required' });
         }
+
+        const userExist = await User.findOne({ username });
+        if (userExist) {
+            return res.status(400).json({ message: 'Try another username' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({'username': username, 'password': hashedPassword});
+        const user = new User({ username, password: hashedPassword });
         await user.save();
-        res.status(201).send('User registered');
+
+        return res.status(201).send('User registered');
     } catch (error) {
-        res.status(500).send('Error registering user');
+        console.error('Error registering user', error);
+        return res.status(500).send('Error registering user');
     }
-}
+};
 
 export const login = async(req: Request, res: Response)=>{
     try {

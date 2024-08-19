@@ -82,6 +82,19 @@ export const userLogin = async (username: string, password: string) => {
     }
 };
 
+export const usernameChecker = async(username: string)=>{
+    try {
+        const response = await api.post('/auth/check-username', {username});
+        return response.data;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)){
+            throw new Error(`Error occurred while checking username: ${error.response?.data || error.message}`);
+        } else {
+            throw new Error(`Error occurred while checking username: ${String(error)}`);
+        }
+    }
+}
+
 export const requestNewTokens = async (refreshToken: string) => {
     try {
         const response = await api.post('/auth/refresh-token', { refreshToken });
