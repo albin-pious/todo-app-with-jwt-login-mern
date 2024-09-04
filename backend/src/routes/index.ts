@@ -1,10 +1,10 @@
 import { Router } from "express";
-import todoRouter from "./todos";
 import authRouter from "./auth";
+import taskRouter from "./tasks";
 
 const router = Router();
 
-router.use('/todos', todoRouter);
-router.use('/auth', authRouter)
+router.use('/auth', authRouter);
+router.use('/task', taskRouter);
 
 export default router;

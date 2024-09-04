@@ -79,8 +79,8 @@ const Sidebar: FC = () => {
                     {/* Todo Link */}
                     <ListItemButton 
                         component={Link} 
-                        href="/todo" 
-                        selected={isActive('/todo')}
+                        href="/tasks" 
+                        selected={isActive('/tasks')}
                     >
                         <ListItemIcon>
                             <Assignment />

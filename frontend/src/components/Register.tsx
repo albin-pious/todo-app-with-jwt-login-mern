@@ -21,8 +21,12 @@ const Register: FC = () => {
             // Redirect to login page upon successful registration
             router.push('/login');
         } catch (err: unknown) {
+            console.log(err);
+            
             if (err instanceof Error) {
                 setError(err.message);
+            } else if (typeof err === 'object' && err !== null && 'message' in err){
+                setError((err as any).message)
             } else {
                 setError('An unexpected error occurred');
             }
@@ -39,7 +43,7 @@ const Register: FC = () => {
         return ()=>{
             usernameAvailability.cancel();
         }
-    })
+    },[username])
 
     const usernameAvailability = debounce(async(username:string)=>{
         try {
