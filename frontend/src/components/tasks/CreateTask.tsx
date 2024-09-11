@@ -1,5 +1,5 @@
 import { Task } from "@/typescript/TodoTypes";
-import { Box, Container, FormControl, Paper, TextField, Typography, InputLabel, MenuItem, Select, } from "@mui/material";
+import { Box, Container, FormControl, Paper, TextField, Typography, Slider } from "@mui/material";
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { Dayjs } from "dayjs";
@@ -50,6 +50,17 @@ const CreateTask: FC = ()=>{
         }
     };
 
+    const handlePriorityChange = (event: Event, newValue: number | number[]) => {
+        const priorityValue = newValue as number;
+        if (priorityValue === 0) {
+            setTaskPriority('low');
+        } else if (priorityValue === 50) {
+            setTaskPriority('medium');
+        } else if (priorityValue === 100) {
+            setTaskPriority('high');
+        }
+    };
+
     return(
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Container maxWidth="sm">
@@ -91,19 +102,48 @@ const CreateTask: FC = ()=>{
                                     onChange={newValue=> setTaskTime(newValue)}
                                 />
                             </FormControl>
-                            <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel id="priority-label">Priority</InputLabel>
-                                <Select
-                                    labelId="priority-label"
-                                    value={taskPriority}
-                                    label="Priority"
-                                    onChange={(e) => setTaskPriority(e.target.value as 'low' | 'medium' | 'high')}
-                                >
-                                    <MenuItem value="low">Low</MenuItem>
-                                    <MenuItem value="medium">Medium</MenuItem>
-                                    <MenuItem value="high">High</MenuItem>
-                                </Select>
-                            </FormControl>
+                            <Paper sx={{ p:3, mb:2 }}>
+                                <Box sx={{ mb:2 }}>
+                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                        <Typography gutterBottom>Prioriy</Typography>
+                                        <Slider
+                                            value={
+                                                taskPriority === 'low' 
+                                                ? 
+                                                    0 
+                                                : 
+                                                    taskPriority === 'medium'
+                                                ?   
+                                                    50
+                                                :
+                                                    100
+                                            }
+                                            onChange={handlePriorityChange}
+                                            step={50}
+                                            marks={[
+                                                { value: 0, label: 'Low'},
+                                                { value: 50, label: 'Medium'},
+                                                { value: 100, label: 'High'}
+                                            ]}
+                                            min={0}
+                                            max={100}
+                                            valueLabelDisplay='off'
+                                            sx={{
+                                                color: getPriorityColor(taskPriority),
+                                                '& .MuiSlider-thumb': {
+                                                    backgroundColor: getPriorityColor(taskPriority),
+                                                },
+                                                '& .MuiSlider-track': {
+                                                    backgroundColor: getPriorityColor(taskPriority),
+                                                },
+                                                '& .MuiSlider-rail': {
+                                                    color: getPriorityColor(taskPriority),
+                                                }
+                                            }}
+                                        />
+                                    </FormControl>
+                                </Box>
+                            </Paper>
                         </Box>
                     </Paper>
                 </Box>
