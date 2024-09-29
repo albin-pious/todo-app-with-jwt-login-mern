@@ -69,23 +69,13 @@ export const login = async (req: Request, res: Response) => {
             const token = generateToken(userId);
             const refreshToken = generateRefreshToken(userId);
 
-            // Set httpOnly cookies
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 3600000, // 1 hour
-                sameSite: 'strict',
-            });
-
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
-                sameSite: 'strict',
-            });
-
             logger.info(`User ${username} logged in successfully`);
-            return res.json({ message: 'Login successful', userName: user.username });
+            return res.json({ 
+                message: 'Login successful', 
+                userName: user.username,
+                token,
+                refreshToken
+            });
         } else {
             logger.warn(`Invalid login attempt for username: ${username}`);
             return res.status(401).json({ message: 'Invalid credentials' });

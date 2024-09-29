@@ -76,7 +76,7 @@ const Login: FC = () => {
             </form>
             <Box className="mt-4 text-center">
                 <Typography variant="body2">
-                    Don't have an account?{' '}
+                    Don&#39;t have an account?{' '}
                     <Link href='/register' passHref>
                         <Button variant="text" color="primary" onClick={() => router.push('/register')}>
                             Create

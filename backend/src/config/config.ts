@@ -8,7 +8,8 @@ const config = {
     corsOptions: {
         origin: process.env.FRONTEND_URL,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-        credentials: true
+        credentials: true,
+        allowHeaders: ['Authorization', 'Content-Type']
     },
 };
 

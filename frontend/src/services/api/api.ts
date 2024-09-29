@@ -1,3 +1,4 @@
+import { Task } from "@/typescript/TodoTypes";
 import axios from "axios";
 import { parseCookies, setCookie as createCookie, destroyCookie } from "nookies";
 
@@ -6,28 +7,52 @@ const api = axios.create({
     withCredentials: true
 });
 
+// Request interceptor to attach token to headers
+api.interceptors.request.use(
+    config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    error => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor for handling 401 errors and refreshing token
 api.interceptors.response.use(
     response => response,
-    async error => {
+    async (error) => {
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
             try {
-                const refreshToken = getCookie('refreshToken'); // Retrieve refresh token from cookies
-                const response = await api.post('/auth/refresh-token', { refreshToken });
+                const refreshToken = localStorage.getItem('refreshToken');
 
-                // Update cookies with new tokens
-                const { token, refreshToken: newRefreshToken } = response.data;
-                setCookie('token', token); // Update cookie with new token
-                setCookie('refreshToken', newRefreshToken); // Update cookie with new refresh token
+                // If there's no refresh token, redirect to login
+                if (!refreshToken) {
+                    window.location.href = '/login';
+                    return;
+                }
 
-                // Retry original request with new token
-                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                const refreshResponse = await api.post('/auth/refresh-token', { refreshToken });
+
+                const { token, refreshToken: newRefreshToken } = refreshResponse.data;
+
+                // Update tokens in localStorage
+                localStorage.setItem('token', token);
+                localStorage.setItem('refreshToken', newRefreshToken);
+
+                // Retry the original failed request with the new token
+                originalRequest.headers['Authorization'] = `Bearer ${token}`;
                 return api(originalRequest);
             } catch (refreshError) {
-                console.error('Token refresh error:', refreshError);
+                console.error('Refresh token expired or invalid:', refreshError);
+                window.location.href = '/login';  // Redirect to login
                 return Promise.reject(refreshError);
             }
         }
@@ -35,18 +60,6 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-export const getCookie = (key: string)=>{
-    const cookie = parseCookies()
-    return cookie[key];
-}
-
-export const setCookie = (key: string, value: string, ctx?: any) => {
-    createCookie(ctx, key, value, {
-        maxAge: 7 * 24 * 60 * 60,
-        path: '/',
-    });
-};
 
 export const removeCookie = (key: string, ctx?: any) => {
     destroyCookie(ctx, key);
@@ -70,6 +83,10 @@ export const createUser = async (username: string, password: string) => {
 export const userLogin = async (username: string, password: string) => {
     try {
         const response = await api.post('/auth/login', { username, password });
+        console.log('response is :::::::: \n', response);
+        const { token, refreshToken } = response.data
+        localStorage.setItem('token',token);
+        localStorage.setItem('refreshToken',refreshToken);
         return response.data; // Handle response if needed
     } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -107,6 +124,15 @@ export const requestNewTokens = async (refreshToken: string) => {
             // Handle generic error
             throw new Error(`Error occurred while refreshing token: ${String(error)}`);
         }
+    }
+};
+
+export const createTask = async (taskData: Task)=>{
+    try {
+        const response = await api.post('/task/create-task',{taskData})
+        return response.data
+    } catch (error) {
+        throw new Error(`Error occurred while creating task: ${error}`)
     }
 };
 

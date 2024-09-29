@@ -1,5 +1,6 @@
+import { createTask } from "@/services/api/api";
 import { Task } from "@/typescript/TodoTypes";
-import { Box, Container, FormControl, Paper, TextField, Typography, Slider } from "@mui/material";
+import { Box, Container, FormControl, Paper, TextField, Typography, Slider, Button } from "@mui/material";
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { Dayjs } from "dayjs";
@@ -15,8 +16,8 @@ const CreateTask: FC = ()=>{
     const [taskCompleted, setTaskCompleted] = useState<boolean>(false);
     const [taskPriority, setTaskPriority] = useState<'low' | 'medium' | 'high'>('medium');
     
-    const handleAddTask = ()=> {
-        if(taskName.trim() !== ''){
+    const handleAddTask = async()=> {
+        try {
             const newTaskItem: Task = {
                 name: taskName,
                 description: taskDescription,
@@ -26,14 +27,19 @@ const CreateTask: FC = ()=>{
                 completed: taskCompleted,
                 priority: taskPriority,
             }
-            setTasks([...tasks, newTaskItem]);
-            setTaskName('');
-            setTaskDescription('')
-            setTaskStatus('pending');
-            setTaskDate(null);
-            setTaskTime(null);
-            setTaskCompleted(false);
-            setTaskPriority('medium');
+            const createdTask = await createTask(newTaskItem);
+            if(createdTask){
+                setTasks([...tasks, newTaskItem]);
+                setTaskName('');
+                setTaskDescription('')
+                setTaskStatus('pending');
+                setTaskDate(null);
+                setTaskTime(null);
+                setTaskCompleted(false);
+                setTaskPriority('medium');
+            }
+        } catch (error) {
+            
         }
     }
 
@@ -145,6 +151,14 @@ const CreateTask: FC = ()=>{
                                 </Box>
                             </Paper>
                         </Box>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleAddTask}
+                            disabled={!taskName || !taskDate}
+                        >
+                            Create task
+                        </Button>
                     </Paper>
                 </Box>
             </Container>
